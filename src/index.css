@@ -1,0 +1,87 @@
+/* Custom Styles for Korey's Kitchen */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+}
+
+/* Link transitions */
+a {
+  transition: color 0.3s ease;
+}
+
+/* Navigation sticky positioning */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Button transitions and hover effects */
+button, .btn {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+button:hover, .btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Fade in animation */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 1s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Footer styling */
+footer {
+  font-size: 0.9rem;
+}
+
+/* Custom scrollbar for locations list (optional) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth transitions for all interactive elements */
+input:focus, 
+textarea:focus, 
+select:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgb(45 212 191); /* teal-400 */
+  transition: all 0.3s ease;
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
