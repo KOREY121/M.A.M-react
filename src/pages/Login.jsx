@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../services/apiService';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -16,25 +15,33 @@ function Login() {
 
     try {
       // Call Django API for authentication
-      const data = await authAPI.login(username, password);
+      const response = await fetch('https://makeameal.onrender.com/api/token/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Invalid credentials');
+      }
+
+      const data = await response.json();
       
       // Store tokens
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       
-      // Get user profile to determine role
-      const profile = await authAPI.getProfile();
-      
-      // Store user data
-      localStorage.setItem('currentUser', JSON.stringify({
-        username: profile.username,
-        email: profile.email,
-        role: profile.role || profile.user_type,
-        token: data.access,
-      }));
+      // Store user data (now included in login response from CustomTokenObtainPairView)
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
 
       // Redirect based on role
-      if (profile.role === 'vendor' || profile.user_type === 'vendor') {
+      if (data.user.role === 'vendor') {
         navigate('/vendor-dashboard');
       } else {
         navigate('/menu');
@@ -59,36 +66,43 @@ function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
-            required
-            disabled={loading}
-            className="w-full border rounded-lg px-3 py-2"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
-            disabled={loading}
-            className="w-full border rounded-lg px-3 py-2"
-          />
+          <div>
+            <label className="block mb-1 text-sm font-medium">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              required
+              disabled={loading}
+              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-teal-300"
+            />
+          </div>
+          
+          <div>
+            <label className="block mb-1 text-sm font-medium">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+              disabled={loading}
+              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-teal-300"
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-teal-500 text-white py-2 rounded-lg hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-teal-500 text-white py-2 rounded-lg hover:bg-orange-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         
-        <p className="text-center mt-3 text-sm">
-          Dont have an account?{' '}
+        <p className="text-center mt-4 text-sm">
+          Don't have an account?{' '}
           <Link to="/signup" className="text-teal-600 hover:underline">
             Sign up
           </Link>
