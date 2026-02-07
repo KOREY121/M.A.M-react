@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { authAPI } from '../services/apiService';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -14,30 +15,14 @@ function Login() {
     setError('');
 
     try {
-      // Call Django API for authentication
-      const response = await fetch('https://makeameal.onrender.com/api/token/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Invalid credentials');
-      }
-
-      const data = await response.json();
+      // Use authAPI instead of hardcoded fetch
+      const data = await authAPI.login(username, password);
       
       // Store tokens
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       
-      // Store user data (now included in login response from CustomTokenObtainPairView)
+      // Store user data
       localStorage.setItem('currentUser', JSON.stringify(data.user));
 
       // Redirect based on role

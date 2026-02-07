@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { authAPI } from '../services/apiService';
 
 function CustomerLogin() {
   const [username, setUsername] = useState('');
@@ -14,27 +15,13 @@ function CustomerLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch('https://makeameal.onrender.com/api/token/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Invalid credentials');
-      }
-
-      const data = await response.json();
+      // Use authAPI instead of hardcoded fetch
+      const data = await authAPI.login(username, password);
       
       // Check if user is a customer (not a vendor)
       if (data.user.role === 'vendor') {
         setError('This is a vendor account. Please use vendor login.');
+        setLoading(false);
         return;
       }
       
