@@ -15,7 +15,6 @@ function Login() {
     setError('');
 
     try {
-      // Use authAPI instead of hardcoded fetch
       const data = await authAPI.login(username, password);
       
       // Store tokens
@@ -25,10 +24,14 @@ function Login() {
       // Store user data
       localStorage.setItem('currentUser', JSON.stringify(data.user));
 
-      // Redirect based on role
+      console.log('User role:', data.user.role); // Debug log
+
+      // Redirect based on role - check for 'vendor' specifically
       if (data.user.role === 'vendor') {
+        console.log('Redirecting to vendor dashboard'); // Debug log
         navigate('/vendor-dashboard');
       } else {
+        console.log('Redirecting to menu'); // Debug log
         navigate('/menu');
       }
     } catch (err) {
