@@ -20,14 +20,16 @@ function VendorDashboard() {
 
   const loadItems = async () => {
     try {
-      // Try to fetch from API first
+      setLoading(true);
       const data = await vendorAPI.getMyMenuItems();
+      console.log('📋 Loaded items:', data);
       setFoodItems(data);
     } catch (err) {
       console.error('Error loading items:', err);
-      // Fallback to localStorage
-      const items = JSON.parse(localStorage.getItem('foodItems')) || [];
-      setFoodItems(items);
+      setError('Failed to load items');
+      setFoodItems([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,13 +67,14 @@ function VendorDashboard() {
         formDataObj.append('image', formData.image);
       }
 
-      // Upload to Django API
-     // const newItem = await menuAPI.uploadMenuItem(formDataObj);
+      // ✅ UPLOAD TO DJANGO API (uncommented!)
+      const newItem = await menuAPI.uploadMenuItem(formDataObj);
+      console.log('✅ Item uploaded:', newItem);
       
       setSuccess('Food item added successfully!');
       
-      // Reload items
-      await loadItems();
+      // ✅ Add new item to state immediately (optimistic update)
+      setFoodItems([...foodItems, newItem]);
 
       // Reset form
       setFormData({
@@ -82,58 +85,39 @@ function VendorDashboard() {
       });
       
       // Reset file input
-      e.target.reset();
+      document.querySelector('input[type="file"]').value = '';
+
+      // Reload to ensure sync
+      setTimeout(() => loadItems(), 500);
 
     } catch (err) {
       setError(err.message || 'Failed to add food item');
       console.error('Upload error:', err);
-      
-      // Fallback to localStorage
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const image = event.target.result;
-        let items = JSON.parse(localStorage.getItem('foodItems')) || [];
-        items.push({ 
-          name: formData.name, 
-          price: formData.price, 
-          description: formData.description,
-          image 
-        });
-        localStorage.setItem('foodItems', JSON.stringify(items));
-        loadItems();
-        setSuccess('Item saved locally');
-      };
-      
-      if (formData.image) {
-        reader.readAsDataURL(formData.image);
-      }
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteItem = async (id, index) => {
+  const deleteItem = async (id) => {
     if (!confirm('Are you sure you want to delete this item?')) return;
 
     try {
-      // Try to delete from API
-      if (id) {
-        await menuAPI.deleteMenuItem(id);
-      }
+      setLoading(true);
+      
+      // ✅ Delete from API
+      await menuAPI.deleteMenuItem(id);
+      console.log('🗑️ Deleted item:', id);
+      
+      // ✅ Update state immediately - remove deleted item
+      setFoodItems(foodItems.filter(item => item.id !== id));
       
       setSuccess('Item deleted successfully!');
       
-      // Reload items
-      await loadItems();
-      
     } catch (err) {
       console.error('Delete error:', err);
-      
-      // Fallback to localStorage
-      let items = JSON.parse(localStorage.getItem('foodItems')) || [];
-      items.splice(index, 1);
-      localStorage.setItem('foodItems', JSON.stringify(items));
-      loadItems();
+      setError('Failed to delete item');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -221,20 +205,28 @@ function VendorDashboard() {
 
         {/* Food Items List */}
         <h3 className="text-xl font-bold text-gray-700 mb-4">Your Uploaded Items</h3>
+        
+        {loading && foodItems.length === 0 && (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+            <p className="mt-2 text-gray-600">Loading items...</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {foodItems.length === 0 ? (
+          {foodItems.length === 0 && !loading ? (
             <p className="col-span-full text-center text-gray-500">
               No items uploaded yet. Add your first item!
             </p>
           ) : (
-            foodItems.map((item, index) => (
-              <div key={item.id || index} className="bg-gray-50 shadow rounded-xl p-4 flex flex-col">
+            foodItems.map((item) => (
+              <div key={item.id} className="bg-gray-50 shadow rounded-xl p-4 flex flex-col">
                 <img
                   src={item.image || item.image_url}
                   alt={item.name}
                   className="w-full h-40 object-cover rounded-lg mb-3"
                   onError={(e) => {
-                    e.target.src = '/media/item_images/placeholder.png';
+                    e.target.src = '/placeholder-food.jpg';
                   }}
                 />
                 <h3 className="text-lg font-bold">{item.name}</h3>
@@ -243,8 +235,9 @@ function VendorDashboard() {
                 )}
                 <p className="text-gray-600 mb-3">₦{parseFloat(item.price).toLocaleString()}</p>
                 <button
-                  onClick={() => deleteItem(item.id, index)}
-                  className="bg-red-500 text-white py-1 rounded hover:bg-red-600 transition"
+                  onClick={() => deleteItem(item.id)}
+                  disabled={loading}
+                  className="bg-red-500 text-white py-1 rounded hover:bg-red-600 transition disabled:bg-gray-400"
                 >
                   Delete
                 </button>

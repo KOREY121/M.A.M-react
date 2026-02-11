@@ -1,5 +1,5 @@
 // API Configuration and Services
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://makeameal.onrender.com';
 
 // Helper function to get auth token
 const getAuthToken = () => {
@@ -67,25 +67,26 @@ export const authAPI = {
   },
 };
 
+
 // ==================== MENU API ====================
 
 export const menuAPI = {
-  // Get all menu items
+  // Get all menu items (using 'meals' endpoint)
   getMenuItems: async () => {
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/items/`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/`);
     return handleResponse(response);
   },
 
   // Get single menu item
   getMenuItem: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/items/${id}/`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/${id}/`);
     return handleResponse(response);
   },
 
-  // Create menu item (Vendor only)
+  // Create menu item (Vendor only) - using 'meals' endpoint
   createMenuItem: async (itemData) => {
     const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/items/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -99,7 +100,7 @@ export const menuAPI = {
   // Upload menu item with image (Vendor only)
   uploadMenuItem: async (formData) => {
     const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/items/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -113,7 +114,7 @@ export const menuAPI = {
   // Update menu item
   updateMenuItem: async (id, itemData) => {
     const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/items/${id}/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/${id}/`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -127,7 +128,7 @@ export const menuAPI = {
   // Delete menu item
   deleteMenuItem: async (id) => {
     const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/items/${id}/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/${id}/`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -137,6 +138,45 @@ export const menuAPI = {
     return handleResponse(response);
   },
 };
+
+// ==================== VENDOR API ====================
+/*
+export const vendorAPI = {
+  // Get vendor dashboard data
+  getDashboard: async () => {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/api/v1/accounts/vendor/dashboard/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  // Get vendor's menu items (using 'meals' endpoint filtered by current user)
+  getMyMenuItems: async () => {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  // Get vendor's orders
+  getMyOrders: async () => {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/api/v1/orders/vendor/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+};
+ */
+
 
 // ==================== ORDER API ====================
 
@@ -221,7 +261,7 @@ export const vendorAPI = {
   // Get vendor's menu items
   getMyMenuItems: async () => {
     const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/api/v1/menu/my-items/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/menu/meals/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
